@@ -1,0 +1,31 @@
+{
+  "name": "home_automation",
+  "version": "0.0.1",
+  "authors": [
+    "Okpe Pessu <opessu@gmail.com>"
+  ],
+  "description": "Control Home Automation System",
+  "main": "project/main.py",
+  "keywords": [
+    "home",
+    "automation",
+    "zwave",
+    "nest",
+    "zigbee",
+    "veralite",
+    "hue"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.4",
+    "jquery": "~2.1.3",
+    "polymer": "Polymer/polymer#^1.0.0"
+  }
+}
