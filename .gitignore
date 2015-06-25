@@ -7,6 +7,9 @@
 .git
 
 env
+*.crt
+*.csr
+*.key
 
 node_modules/
 npm-debug.log
