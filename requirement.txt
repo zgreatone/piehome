@@ -1,2 +1,6 @@
 tornado=4.1
 Jinja2==2.7.3
+flask==0.10.1
+simplejson==3.7.3
+redis==2.10.3
+requests==2.7.0
