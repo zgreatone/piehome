@@ -33,6 +33,9 @@ class MainHandler(tornado.web.RequestHandler):
             # self.set_header("Content-Type", "application/json; charset=UTF-8")
         # lights = utf8(lights)
         # self.write(lights)
+        # motion_sensors = smarthome.retrieve_motion_sensor_data()
+        # motion_sensors = json.dumps(motion_sensors, cls=CustomJSONEncoder)
+        # self.write(motion_sensors);
         self.write("hello world")
 
 def set_env_variables():
@@ -63,6 +66,8 @@ def main():
     application = tornado.web.Application([
         (r"/", MainHandler),
     ],
+        template_path=os.path.join(os.path.dirname(__file__), "templates"),
+        static_path=os.path.join(os.path.dirname(__file__), "static"),
         xsrf_cookies=True,
         debug=options.debug, )
     http_server = tornado.httpserver.HTTPServer(application, ssl_options={
