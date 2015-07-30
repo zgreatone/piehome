@@ -3,16 +3,17 @@ import os
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
-from tornado.escape import utf8, _unicode
 import simplejson as json
-
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "smarthome"))
+import database
 
+from tornado.escape import utf8, _unicode
 from smarthome import main as smarthome
 from smarthome.main import CustomJSONEncoder
-
 from tornado.options import define, options, parse_command_line
+from handlers import setup as handler_setup
+
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "smarthome"))
 
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
@@ -28,15 +29,23 @@ class MainHandler(tornado.web.RequestHandler):
         # lights = smarthome.list_lights()
         log.info(os.path.dirname(os.path.realpath(__file__)))
         # if isinstance(lights, dict):
-            #lights = escape.json_encode(lights)
-            # lights = json.dumps(lights, cls=CustomJSONEncoder)
-            # self.set_header("Content-Type", "application/json; charset=UTF-8")
+        # lights = escape.json_encode(lights)
+        # lights = json.dumps(lights, cls=CustomJSONEncoder)
+        # self.set_header("Content-Type", "application/json; charset=UTF-8")
         # lights = utf8(lights)
         # self.write(lights)
         # motion_sensors = smarthome.retrieve_motion_sensor_data()
         # motion_sensors = json.dumps(motion_sensors, cls=CustomJSONEncoder)
         # self.write(motion_sensors);
+        # scenes = smarthome.retrieve_scene_data()
+        # scenes = json.dumps(scenes, cls=CustomJSONEncoder)
+        # connection = database.get_connection()
+        # self.write(scenes)
+        # with connection:
+        #     cur = connection.cursor()
+        #     cur.execute("CREATE TABLE Cars(Id INT, Name TEXT, Price INT)")
         self.write("hello world")
+
 
 def set_env_variables():
     """
@@ -60,11 +69,13 @@ def set_env_variables():
     os.environ["VERA_AUTH"] = str(vera_auth)
     os.environ["VERA_IP"] = str(vera_ip)
 
+
 def main():
     parse_command_line()
     set_env_variables()
     application = tornado.web.Application([
         (r"/", MainHandler),
+        (r"/setup", handler_setup.SetupHandler)
     ],
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
