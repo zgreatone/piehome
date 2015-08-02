@@ -8,6 +8,7 @@ import sys
 import database
 
 from tornado.escape import utf8, _unicode
+from tornado import gen
 from smarthome import main as smarthome
 from smarthome.main import CustomJSONEncoder
 from tornado.options import define, options, parse_command_line
@@ -25,6 +26,7 @@ define("vera_auth_passwd", default=None, help="password if veralite requires aut
 
 
 class MainHandler(tornado.web.RequestHandler):
+    @gen.coroutine
     def get(self):
         log.debug("MainHandler")
         # lights = smarthome.list_lights()
