@@ -12,6 +12,7 @@ from smarthome import main as smarthome
 from smarthome.main import CustomJSONEncoder
 from tornado.options import define, options, parse_command_line
 from handlers import setup as handler_setup
+from handlers import alexa as handler_alexa
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "smarthome"))
 
@@ -44,6 +45,9 @@ class MainHandler(tornado.web.RequestHandler):
         # with connection:
         #     cur = connection.cursor()
         #     cur.execute("CREATE TABLE Cars(Id INT, Name TEXT, Price INT)")
+        # m_value = smarthome.modify_motion_sensor_state(20, 1)
+        # value = smarthome.get_light(36)
+        # value = smarthome.modify_light_state(36, 0)
         self.write("hello world")
 
 
@@ -75,12 +79,14 @@ def main():
     set_env_variables()
     application = tornado.web.Application([
         (r"/", MainHandler),
-        (r"/setup", handler_setup.SetupHandler)
+        (r"/setup", handler_setup.SetupHandler),
+        (r"/alexa", handler_alexa.AlexaHandler)
     ],
+        cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
         xsrf_cookies=True,
-        debug=options.debug, )
+        debug=options.debug)
     http_server = tornado.httpserver.HTTPServer(application, ssl_options={
         "certfile": os.path.join(os.path.dirname(os.path.realpath(__file__)), "ssl", "server.crt"),
         "keyfile": os.path.join(os.path.dirname(os.path.realpath(__file__)), "ssl", "server.key")
