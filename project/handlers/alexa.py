@@ -55,7 +55,7 @@ class AlexaHandler(tornado.web.RequestHandler):
             self.write({'speechOutput': "Invalid authorization Error when accessing home automation service"})
         else:
             # TODO error check below in case body doest exists
-            body = tornado.escape.to_basestring(self.get_argument("body"))
+            body = tornado.escape.to_basestring(self.request.body)
 
             body_json = json.loads(body)
 
