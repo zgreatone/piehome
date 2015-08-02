@@ -57,6 +57,8 @@ class AlexaHandler(tornado.web.RequestHandler):
             # TODO error check below in case body doest exists
             body = tornado.escape.to_basestring(self.request.body)
 
+            log.debug("message from: " + body)
+
             body_json = json.loads(body)
 
             response = self.process_post_body(body_json)
