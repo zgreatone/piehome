@@ -9,7 +9,7 @@ import database
 
 from tornado.escape import utf8, _unicode
 from tornado import gen
-from tornado.options import define, options, parse_command_line
+from tornado.options import define, options, parse_command_line, parse_config_file
 from handlers import setup as handler_setup
 from handlers import alexa as handler_alexa
 
@@ -18,12 +18,15 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "smart
 from smarthome import main as smarthome
 from smarthome.main import CustomJSONEncoder
 
+curr_dir = os.path.dirname(os.path.realpath(__file__))
+
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
 define("vera_ip", default='192.168.1.33', help="The local ip to the veralite")
 define("vera_auth", default=False, help="if veralite requires authentication")
 define("vera_auth_user", default=None, help="username if veralite requires authentication")
 define("vera_auth_passwd", default=None, help="password if veralite requires authentication")
+define("config_file_path", default=curr_dir+"/config.py", help="config file location")
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -79,6 +82,7 @@ def set_env_variables():
 
 def main():
     parse_command_line()
+    parse_config_file(options.config_file_path)
     set_env_variables()
     application = tornado.web.Application([
         (r"/", MainHandler),
