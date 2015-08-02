@@ -9,13 +9,14 @@ import database
 
 from tornado.escape import utf8, _unicode
 from tornado import gen
-from smarthome import main as smarthome
-from smarthome.main import CustomJSONEncoder
 from tornado.options import define, options, parse_command_line
 from handlers import setup as handler_setup
 from handlers import alexa as handler_alexa
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "smarthome"))
+
+from smarthome import main as smarthome
+from smarthome.main import CustomJSONEncoder
 
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=False, help="run in debug mode")
