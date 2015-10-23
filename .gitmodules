@@ -1,3 +1,0 @@
-[submodule "project/smarthome"]
-	path = project/smarthome
-	url = git@github.com:zgreatone/smarthome.git
