@@ -21,7 +21,7 @@ gulp.task('server', function () {
     if (node) node.kill()
     node = spawn('python',
         [
-            'project/main.py',
+            'piehome/main.py',
             '--logging=' + log_level,
             '--vera_auth=' + vera_auth,
             '--vera_ip=' + vera_ip,
@@ -37,9 +37,8 @@ gulp.task('server', function () {
 })
 
 gulp.task('watch', function () {
-    gulp.watch(['project/main.py',
-        'project/smarthome/**/*.py',
-        'project/static/**/*.js'], ['server'])
+    gulp.watch(['piehome/main.py',
+        'piehome/static/**/*.js'], ['server'])
 })
 /**
  * $ gulp

@@ -1,5 +1,5 @@
 {
-  "name": "home_automation",
+  "name": "pie-home",
   "version": "0.0.1",
   "description": "control home automation system",
   "main": "index.js",

@@ -19,3 +19,4 @@ bower_components/
 *.log
 *.db
 config.py
+.python-version
