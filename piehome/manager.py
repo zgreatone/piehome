@@ -1,0 +1,22 @@
+from controller.veralite_controller import VeraliteController
+
+
+class SystemManager(object):
+    def __init__(self, options):
+        self._options = options
+        self._connection = None
+        self._controllers = None
+
+    def initialize(self):
+        self._controllers = dict()
+        self._setup_vera_controller()
+
+    def _setup_vera_controller(self):
+        vera_ctrl = VeraliteController()
+        init_params = {
+            'ip': str(self._options.vera_ip),
+            'username': str(self._options.vera_auth_user),
+            'password': str(self._options.vera_auth_password)
+        }
+        vera_ctrl.initialize(**init_params)
+        self._controllers[vera_ctrl.key] = vera_ctrl

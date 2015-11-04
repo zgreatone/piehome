@@ -3,6 +3,7 @@ import sqlite3 as lite
 
 sqlite3_db = 'db/app.db'
 
+
 def get_connection():
     """
     get connection to sqlite3 database
