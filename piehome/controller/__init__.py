@@ -51,18 +51,20 @@ class Action(object):
         # create actions
 
 
-ON = "ON"
-OFF = "OFF"
+POWER_ON = "ON"
+POWER_OFF = "OFF"
+POWER_TOGGLE = "POWER_TOGGLE"
 ARM = "ARM"
 DISARM = "DISARM"
 BRIGHTNESS = "BRIGHTNESS"
 
-_action_on = Action("ON", "Turn on Device Action")
-_action_off = Action("OFF", "Turn on Device Action")
-_action_brightness = Action("BRIGHTNESS", "Set Brightness Level of Device",
+_action_on = Action(POWER_ON, "Turn on Device Action")
+_action_off = Action(POWER_OFF, "Turn off Device Action")
+_action_toggle = Action(POWER_TOGGLE, "Toggle Power Device Action")
+_action_brightness = Action(BRIGHTNESS, "Set Brightness Level of Device",
                             ["level"])
-_action_arm = Action("ARM", "Arm on Sensor Device")
-_action_disarm = Action("DISARM", "Disarm a Sensor Device")
+_action_arm = Action(ARM, "Arm on Sensor Device")
+_action_disarm = Action(DISARM, "Disarm a Sensor Device")
 
 actions = dict()
 actions[_action_on.code] = _action_on
@@ -70,6 +72,7 @@ actions[_action_off.code] = _action_off
 actions[_action_brightness.code] = _action_brightness
 actions[_action_arm.code] = _action_arm
 actions[_action_disarm.code] = _action_disarm
+actions[_action_toggle] = _action_toggle
 
 
 # create capabilities
@@ -77,11 +80,13 @@ _capability_switch = Capability(1, "can be switch on and off", [_action_on, _act
 _capability_dimming_light = Capability(2, "light can be switch on, switched off and brightness level modified",
                                        [_action_on, _action_off, _action_brightness])
 _capability_sensor = Capability(3, "can be armed or disarmed", [_action_arm, _action_disarm])
+_capability_toggle = Capability(4, "power toggle", [_action_toggle])
 
 capabilities = dict()
 capabilities[_capability_switch.code] = _capability_switch
 capabilities[_capability_dimming_light.code] = _capability_dimming_light
 capabilities[_capability_sensor.code] = _capability_sensor
+capabilities[_capability_toggle.code] = _capability_toggle
 
 
 class Controller(object, metaclass=abc.ABCMeta):
@@ -106,6 +111,11 @@ class Controller(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def actions(self):
         raise NotImplementedError('users must define initialize to use this base class')
+
+    @property
+    @abc.abstractmethod
+    def devices(self):
+        raise NotImplementedError('users must define devices to use this base class')
 
     @property
     @abc.abstractmethod

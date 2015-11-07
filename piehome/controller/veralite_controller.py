@@ -1,8 +1,8 @@
 import logging as log
 import controller as controller
 
-
 import veralite
+import model.device as device
 
 from controller.exceptions import MissingParameterError
 from controller.exceptions import ControllerNotInitializedError
@@ -48,6 +48,23 @@ class VeraliteController(controller.Controller):
     def actions(self):
         return list(self._actions)
 
+    @property
+    def devices(self):
+        device_list = []
+        for value in self._vera_api.dimming_lights.values():
+            device_list.append(device.Device(value.name, self.key,
+                                             value.identifier, [1, 2], {}))
+
+        for value in self._vera_api.switches.values():
+            device_list.append(device.Device(value.name, self.key, value.identifier,
+                                             [1], {}))
+
+        for value in self._vera_api.motion_sensors.values():
+            device_list.append(device.Device(value.name, self.key, value.identifier,
+                                             [3], {}))
+
+        return device_list
+
     def perform_action(self, device_id, action_code, action_arguments=None):
         """
         Method to perform action on device
@@ -60,9 +77,9 @@ class VeraliteController(controller.Controller):
         if self._vera_api is None:
             raise ControllerNotInitializedError("controller has not been initialized")
 
-        if action_code == controller.ON:
+        if action_code == controller.POWER_ON:
             response = self._handle_on_action(device_id)
-        elif action_code == controller.OFF:
+        elif action_code == controller.POWER_OFF:
             response = self._handle_off_action(device_id)
         elif action_code == controller.ARM:
             response = self._handle_arm_action(device_id)

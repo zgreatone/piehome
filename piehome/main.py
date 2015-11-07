@@ -10,6 +10,7 @@ from manager import SystemManager
 from tornado.options import define, options, parse_command_line, parse_config_file
 
 from handlers import home as handler_home
+from handlers import device as handler_device
 from handlers import alexa as handler_alexa
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "piehome"))
@@ -25,6 +26,10 @@ define("debug", default=False, help="run in debug mode")
 define("vera_ip", default='192.168.1.33', help="The local ip to the veralite")
 define("vera_auth_user", default=None, help="username if veralite requires authentication")
 define("vera_auth_password", default=None, help="password if veralite requires authentication")
+define("harmony_ip", default='192.168.1.33', help="The local ip to the harmony hub")
+define("harmony_email", default=None, help="harmony user email")
+define("harmony_password", default=None, help="harmony password")
+define("harmony_port", default=5222, help="harmony port", type=int)
 define("config_file_path", default=_default_config_file, help="config file location")
 
 
@@ -36,9 +41,11 @@ def main():
     system_manager = SystemManager(options)
 
     system_manager.initialize()
+    d = system_manager.get_devices()
 
     application = tornado.web.Application([
         (r"/", handler_home.HomeHandler),
+        (r"/device", handler_device.DeviceHandler, {'system_manager': system_manager}),
         (r"/alexa_skill", handler_alexa.AlexaSkillHandler, {'system_manager': system_manager}),
         (r"/alexa_light", handler_alexa.AlexaLightHandler, {'system_manager': system_manager})
     ],

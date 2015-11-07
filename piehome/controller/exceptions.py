@@ -24,3 +24,13 @@ class ControllerNotInitializedError(Exception):
 class InvalidDeviceError(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
+
+
+class LoginTokenError(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
+
+class SessionTokenError(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
