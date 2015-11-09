@@ -87,7 +87,25 @@ class HarmonyController(controller.Controller):
         :return:
         :raises ControllerNotInitializedError: when action is trying to be performed before initializing controller
         """
-        pass
+        if self._harmony_api is None:
+            raise ControllerNotInitializedError("controller has not been initialized")
+
+        if action_code == controller.POWER_ON:
+            response = self._handle_action_command(device_id, "PowerOn")
+        elif action_code == controller.POWER_OFF:
+            response = self._handle_action_command(device_id, "PowerOff")
+        elif action_code == controller.POWER_TOGGLE:
+            response = self._handle_action_command(device_id, "PowerToggle")
+        else:
+            raise UnsupportedActionError("action[" + action_code + "] not supported")
+
+        return response
+
+    def _handle_action_command(self, device_id, command):
+        with self._harmony_api as hapi:
+            hapi.send_command(device_id, command)
+
+        return {'result': True, 'message': 'command sent for device'}
 
     @staticmethod
     def _resolve_capabilities(d):

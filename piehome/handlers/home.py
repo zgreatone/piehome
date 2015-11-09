@@ -8,6 +8,7 @@ from tornado import gen
 
 
 class HomeHandler(tornado.web.RequestHandler):
+
     @gen.coroutine
     def get(self):
         log.debug("MainHandler")

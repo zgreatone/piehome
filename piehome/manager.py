@@ -1,3 +1,5 @@
+import database
+
 from controller.veralite_controller import VeraliteController
 from controller.harmony_controller import HarmonyController
 
@@ -7,11 +9,14 @@ class SystemManager(object):
         self._options = options
         self._connection = None
         self._controllers = None
+        self._db_connection = database.get_connection()
 
     def initialize(self):
         self._controllers = dict()
         self._setup_vera_controller()
         self._setup_harmony_controller()
+
+        database.initialize_database()
 
     def get_devices(self):
         devices = []

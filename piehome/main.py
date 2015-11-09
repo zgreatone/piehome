@@ -5,6 +5,8 @@ import tornado.ioloop
 import tornado.web
 import sys
 
+import database
+
 from manager import SystemManager
 
 from tornado.options import define, options, parse_command_line, parse_config_file
@@ -12,6 +14,7 @@ from tornado.options import define, options, parse_command_line, parse_config_fi
 from handlers import home as handler_home
 from handlers import device as handler_device
 from handlers import alexa as handler_alexa
+from handlers import setup as handler_setup
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "piehome"))
 
@@ -41,10 +44,13 @@ def main():
     system_manager = SystemManager(options)
 
     system_manager.initialize()
-    d = system_manager.get_devices()
+
+    db_connection = database.get_connection()
 
     application = tornado.web.Application([
         (r"/", handler_home.HomeHandler),
+        (r"/setup", handler_setup.SetupHandler, {'system_manager': system_manager,
+                                                 'db_connection': db_connection}),
         (r"/device", handler_device.DeviceHandler, {'system_manager': system_manager}),
         (r"/alexa_skill", handler_alexa.AlexaSkillHandler, {'system_manager': system_manager}),
         (r"/alexa_light", handler_alexa.AlexaLightHandler, {'system_manager': system_manager})

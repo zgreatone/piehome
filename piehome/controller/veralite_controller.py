@@ -2,7 +2,7 @@ import logging as log
 import controller as controller
 
 import veralite
-import model.device as device
+import model.device as piehome_device
 
 from controller.exceptions import MissingParameterError
 from controller.exceptions import ControllerNotInitializedError
@@ -52,16 +52,16 @@ class VeraliteController(controller.Controller):
     def devices(self):
         device_list = []
         for value in self._vera_api.dimming_lights.values():
-            device_list.append(device.Device(value.name, self.key,
-                                             value.identifier, [1, 2], {}))
+            device_list.append(piehome_device.Device(value.name, self.key,
+                                                     value.identifier, [1, 2], {}))
 
         for value in self._vera_api.switches.values():
-            device_list.append(device.Device(value.name, self.key, value.identifier,
-                                             [1], {}))
+            device_list.append(piehome_device.Device(value.name, self.key, value.identifier,
+                                                     [1], {}))
 
         for value in self._vera_api.motion_sensors.values():
-            device_list.append(device.Device(value.name, self.key, value.identifier,
-                                             [3], {}))
+            device_list.append(piehome_device.Device(value.name, self.key, value.identifier,
+                                                     [3], {}))
 
         return device_list
 
