@@ -7,9 +7,6 @@ curr_dir = os.path.dirname(os.path.realpath(__file__))
 sqlite3_db = os.path.sep.join((curr_dir, "db", "piehome.db"))
 
 
-# sqlite3_db = 'db/piehome.db'
-
-
 def get_connection():
     """
     get connection to sqlite3 database

@@ -1,4 +1,4 @@
-tornado=4.2
+tornado==4.2
 Jinja2==2.7.3
 simplejson==3.7.3
 redis==2.10.3
