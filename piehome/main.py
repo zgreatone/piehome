@@ -33,6 +33,7 @@ define("harmony_ip", default='192.168.1.33', help="The local ip to the harmony h
 define("harmony_email", default=None, help="harmony user email")
 define("harmony_password", default=None, help="harmony password")
 define("harmony_port", default=5222, help="harmony port", type=int)
+define("system_key", default='piehome', help="The local ip to the veralite")
 define("config_file_path", default=_default_config_file, help="config file location")
 
 
@@ -45,12 +46,9 @@ def main():
 
     system_manager.initialize()
 
-    db_connection = database.get_connection()
-
     application = tornado.web.Application([
         (r"/", handler_home.HomeHandler),
-        (r"/setup", handler_setup.SetupHandler, {'system_manager': system_manager,
-                                                 'db_connection': db_connection}),
+        (r"/setup", handler_setup.SetupHandler, {'system_manager': system_manager}),
         (r"/device", handler_device.DeviceHandler, {'system_manager': system_manager}),
         (r"/alexa_skill", handler_alexa.AlexaSkillHandler, {'system_manager': system_manager}),
         (r"/alexa_light", handler_alexa.AlexaLightHandler, {'system_manager': system_manager})

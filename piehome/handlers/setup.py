@@ -7,9 +7,9 @@ class SetupHandler(tornado.web.RequestHandler):
 
     """
 
-    def initialize(self, system_manager, db_connection):
+    def initialize(self, system_manager):
         self._system_manager = system_manager
-        self._db_connection = db_connection
+        self._db_connection = system_manager.db_connection
 
     def get(self):
         log.debug("in SetupHandler")

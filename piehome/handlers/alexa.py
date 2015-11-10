@@ -7,6 +7,10 @@ from tornado import gen
 
 
 class AlexaSkillHandler(tornado.web.RequestHandler):
+    """
+    Handler responsible for responding to alexa home_automation skill requests
+    """
+
     def initialize(self, system_manager):
         self._manager = system_manager
 
@@ -15,7 +19,7 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
 
     @gen.coroutine
     def get(self):
-        log.debug("in AlexaHandler:get")
+        log.debug("in AlexaSkillHandler:get")
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         if not self.is_request_authorized():
             self.write({'speechOutput': "Invalid authorization Error when accessing home automation service"})
@@ -73,19 +77,23 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
         :return:
         """
         intent = body_json['intent']
-        response = AlexaHandler.get_response_object(intent)
-        if intent == "TurnOn":
+        log.debug("intent=" + intent + " received")
+        response = AlexaSkillHandler.get_response_object(intent)
+        if intent == "PowerOn" or intent == "PowerOff" or intent == "PowerToggle" \
+                or intent == "Arm" or intent == "DisArm":
             device = body_json['device']
-            response['speechOutput'] = "In the near future I will turn on " + device + " ."
-        elif intent == "TurnOff":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will turn off " + device + " ."
-        elif intent == "Arm":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will arm " + device + " ."
-        elif intent == "DisArm":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will disarm " + device + " ."
+            log.debug("asking to perform action=" + intent + "on device=" + device)
+            response['speechOutput'] = "In the near future I will do something on" + device + " ."
+        elif intent == "ActivateScene":
+            response['speechOutput'] = "In the near future I will activate a scene."
+        elif intent == "DeActivateScene":
+            response['speechOutput'] = "In the near future I will deactivate a scene ."
+        elif intent == "NestMode":
+            response['speechOutput'] = "In the near future I set mode on nest device."
+        elif intent == "NestLevel":
+            response['speechOutput'] = "In the near future I set level on nest device."
+        elif intent == "NestStatus":
+            response['speechOutput'] = "In the near future I will update status on nest device."
         else:
             response['speechOutput'] = "I have no clue what you are trying to do"
 
@@ -103,7 +111,7 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
         :return:
         """
         api_key = self.get_argument("api_key", None)
-        if api_key is None:
+        if api_key is None or api_key != self._manager.system_key:
             return False
         else:
             return True
@@ -176,7 +184,7 @@ class AlexaLightHandler(tornado.web.RequestHandler):
         :return:
         """
         intent = body_json['intent']
-        response = AlexaHandler.get_response_object(intent)
+        response = AlexaLightHandler.get_response_object(intent)
         if intent == "TurnOn":
             device = body_json['device']
             response['speechOutput'] = "In the near future I will turn on " + device + " ."

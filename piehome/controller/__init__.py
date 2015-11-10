@@ -51,12 +51,12 @@ class Action(object):
         # create actions
 
 
-POWER_ON = "ON"
-POWER_OFF = "OFF"
-POWER_TOGGLE = "POWER_TOGGLE"
-ARM = "ARM"
-DISARM = "DISARM"
-BRIGHTNESS = "BRIGHTNESS"
+POWER_ON = "PowerOn"
+POWER_OFF = "PowerOff"
+POWER_TOGGLE = "PowerToggle"
+ARM = "Arm"
+DISARM = "DisArm"
+BRIGHTNESS = "Brightness"
 
 _action_on = Action(POWER_ON, "Turn on Device Action")
 _action_off = Action(POWER_OFF, "Turn off Device Action")

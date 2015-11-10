@@ -26,6 +26,10 @@ class SystemManager(object):
 
         return devices
 
+    @property
+    def db_connection(self):
+        return self._db_connection
+
     def _setup_vera_controller(self):
         vera_ctrl = VeraliteController()
         init_params = {
@@ -35,6 +39,10 @@ class SystemManager(object):
         }
         vera_ctrl.initialize(**init_params)
         self._controllers[vera_ctrl.key] = vera_ctrl
+
+    @property
+    def system_key(self):
+        return self._options.system_key
 
     def _setup_harmony_controller(self):
         harmony_ctrl = HarmonyController()
