@@ -20,3 +20,6 @@ bower_components/
 *.db
 config.py
 .python-version
+
+tmp/
+venv/
