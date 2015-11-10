@@ -1,8 +1,13 @@
+import os
 import sys
 import sqlite3 as lite
 import logging as log
 
-sqlite3_db = 'db/piehome.db'
+curr_dir = os.path.dirname(os.path.realpath(__file__))
+sqlite3_db = os.path.sep.join((curr_dir, "db", "piehome.db"))
+
+
+# sqlite3_db = 'db/piehome.db'
 
 
 def get_connection():
