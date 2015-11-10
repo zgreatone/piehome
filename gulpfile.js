@@ -8,10 +8,6 @@ var gulp = require('gulp'),
 
 
 var log_level = args.logging ? args.logging : 'info';
-var vera_ip = args.vera_ip ? args.vera_ip : '0.0.0.0';
-var vera_auth = args.auth ? args.auth : 'False';
-var vera_auth_user = args.vera_auth_user ? args.vera_auth_user : 'None';
-var vera_auth_passwd = args.vera_auth_passwd ? args.vera_auth_passwd : 'None';
 
 /**
  * $ gulp server
@@ -22,11 +18,7 @@ gulp.task('server', function () {
     node = spawn('python',
         [
             'piehome/main.py',
-            '--logging=' + log_level,
-            '--vera_auth=' + vera_auth,
-            '--vera_ip=' + vera_ip,
-            '--vera_auth_user=' + vera_auth_user,
-            '--vera_auth_passwd=' + vera_auth_passwd
+            '--logging=' + log_level
         ],
         {stdio: 'inherit'})
     node.on('close', function (code) {
