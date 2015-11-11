@@ -74,9 +74,11 @@ class VeraliteController(controller.Controller):
         :return:
         :raises ControllerNotInitializedError: when action is trying to be performed before initializing controller
         """
+
         if self._vera_api is None:
             raise ControllerNotInitializedError("controller has not been initialized")
 
+        device_id = int(device_id)
         if action_code == controller.POWER_ON:
             response = self._handle_on_action(device_id)
         elif action_code == controller.POWER_OFF:
