@@ -117,7 +117,13 @@ class SystemManager(object):
 
     def _support_action(self, device, action):
         log.debug("checking action [" + action + "] support for device [" + device.name + "]")
-        log.debug("device[" + device.name + "] has capabilities[" + str(device.capabilities) + "]")
+        log.debug("device[" + device.name + "] has capabilities" + str(device.capabilities) + "")
+        log.debug("action_check" + str(action is controller.POWER_ON))
+        log.debug("cap_check" + str(1 in device.capabilities))
+        log.debug("cap_check" + str(2 in device.capabilities))
+        log.debug("global_check" + str(((action is controller.POWER_ON or action is controller.POWER_OFF) and
+                                        (1 in device.capabilities or 2 in device.capabilities))
+                                       ))
         if (action is controller.POWER_ON or action is controller.POWER_OFF) and \
                 (1 in device.capabilities or 2 in device.capabilities):
             return True
