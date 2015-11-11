@@ -29,7 +29,7 @@ gulp.task('server', function () {
 })
 
 gulp.task('watch', function () {
-    gulp.watch(['piehome/main.py',
+    gulp.watch(['piehome/main.py','piehome/**/*.py',
         'piehome/static/**/*.js'], ['server'])
 })
 /**
