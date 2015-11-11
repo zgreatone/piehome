@@ -69,8 +69,7 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
             response = self.process_post_body(body_json)
             self.write(response)
 
-    @staticmethod
-    def process_post_body(body_json):
+    def process_post_body(self, body_json):
         """
 
         :param body_json:
@@ -83,7 +82,24 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
                 or intent == "Arm" or intent == "DisArm":
             device = body_json['device']
             log.debug("asking to perform action=" + intent + "on device=" + device)
-            response['speechOutput'] = "In the near future I will do something on" + device + " ."
+
+            devices = self._manager.query_device(device)
+
+            device_count = len(devices)
+            log.debug(str(device_count) + " matching device with name [" + device + "]")
+            if device_count == 1:
+                try:
+                    action_response = self._manager.perform_action(devices[0], intent)
+                    if 'result' in action_response and action_response['result']:
+                        response['speechOutput'] = "Done."
+                    else:
+                        response['speechOutput'] = "Error performing action on " + devices[0].name + " ."
+
+                except Exception as e:
+                    response['speechOutput'] = "Error when trying to perform action on device" + device + " ."
+            elif device_count == 0 or device_count > 1:
+                response['speechOutput'] = "Too many devices with name" + device + " ."
+
         elif intent == "ActivateScene":
             response['speechOutput'] = "In the near future I will activate a scene."
         elif intent == "DeActivateScene":

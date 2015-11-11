@@ -5,8 +5,6 @@ import tornado.ioloop
 import tornado.web
 import sys
 
-import database
-
 from manager import SystemManager
 
 from tornado.options import define, options, parse_command_line, parse_config_file

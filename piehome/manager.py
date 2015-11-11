@@ -1,7 +1,9 @@
 import database
-
 from controller.veralite_controller import VeraliteController
 from controller.harmony_controller import HarmonyController
+from model.device import Device
+
+import controller
 
 
 class SystemManager(object):
@@ -25,6 +27,33 @@ class SystemManager(object):
             devices.extend(ctlr.devices)
 
         return devices
+
+    def query_device(self, device_name):
+        devices = []
+
+        with self._db_connection as con:
+            query_string = "SELECT * FROM device where name LIKE '%" + str(
+                device_name).lower() + "%' "
+            cur = con.cursor()
+            cur.execute(query_string)
+            rows = cur.fetchall()
+            if len(rows) > 0:
+                for row in rows:
+                    capabilities = self._get_device_capabilties(con, row['identifier'])
+                    attributes = self._get_device_attributes(con, row['identifier'])
+                    device = Device(row['name'], row['controller'], row['controller_device_id'],
+                                    capabilities, attributes)
+                    devices.append(device)
+
+        return devices
+
+    def perform_action(self, action, device):
+        if self._support_action(device, action):
+            ctlr = self._controllers[device.controller]
+            response = ctlr.perform_action(device.controller_device_id, action)
+            return response
+        else:
+            raise Exception("Action not supported on controller")
 
     @property
     def db_connection(self):
@@ -54,3 +83,44 @@ class SystemManager(object):
         }
         harmony_ctrl.initialize(**init_params)
         self._controllers[harmony_ctrl.key] = harmony_ctrl
+
+    @staticmethod
+    def _get_device_capabilties(con, device_identifier):
+        capabilities = []
+        query_string = "SELECT * FROM device_capabilty where device_capabilty.device_identifier='" + str(
+            device_identifier) + "' "
+        cur = con.cursor()
+        cur.execute(query_string)
+        rows = cur.fetchall()
+        if len(rows) > 0:
+            for row in rows:
+                capabilities.append(row['capability'])
+
+        return capabilities
+
+    @staticmethod
+    def _get_device_attributes(con, device_identifier):
+        attributes = dict()
+        query_string = "SELECT * FROM device_attribute where device_attribute.device_identifier='" + str(
+            device_identifier) + "' "
+        cur = con.cursor()
+        cur.execute(query_string)
+        rows = cur.fetchall()
+        if len(rows) > 0:
+            for row in rows:
+                attributes[row['attribute_key']] = row['attribute_value']
+
+        return attributes
+
+    def _support_action(self, device, action):
+        if (action is controller.POWER_ON or action is controller.POWER_OFF) and \
+                (1 in device.capabilities or 2 in device.capabilities):
+            return True
+        elif action is controller.BRIGHTNESS and 2 in device.capabilities:
+            return True
+        elif (action is controller.ARM or action is controller.DISARM) and 3 in device.capabilities:
+            return True
+        elif action is controller.POWER_TOGGLE and 4 in device.capabilities:
+            return True
+        else:
+            return False
