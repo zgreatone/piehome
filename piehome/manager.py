@@ -49,7 +49,7 @@ class SystemManager(object):
         return devices
 
     def perform_action(self, action, device):
-        log.debug("perform action[" + action + "] on device[" + device.name + "]")
+        log.debug("perform action[" + action + "] on device[" + str(device.name) + "]")
         if self._support_action(device, action):
             ctlr = self._controllers[device.controller]
             response = ctlr.perform_action(device.controller_device_id, action)
