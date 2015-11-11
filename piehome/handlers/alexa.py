@@ -96,8 +96,11 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
                         response['speechOutput'] = "Error performing action on " + devices[0].name + " ."
 
                 except Exception as e:
+                    log.error(e)
                     response['speechOutput'] = "Error when trying to perform action on device" + device + " ."
-            elif device_count == 0 or device_count > 1:
+            elif device_count == 0:
+                response['speechOutput'] = "No device found with name" + device + " ."
+            else:
                 response['speechOutput'] = "Too many devices with name" + device + " ."
 
         elif intent == "ActivateScene":

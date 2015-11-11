@@ -1,3 +1,4 @@
+import logging as log
 import database
 from controller.veralite_controller import VeraliteController
 from controller.harmony_controller import HarmonyController
@@ -48,11 +49,13 @@ class SystemManager(object):
         return devices
 
     def perform_action(self, action, device):
+        log.debug("perform action[" + action + "] on device[" + device.name + "]")
         if self._support_action(device, action):
             ctlr = self._controllers[device.controller]
             response = ctlr.perform_action(device.controller_device_id, action)
             return response
         else:
+            log.error("action[" + action + "] not supported on device[" + device.name + "] ")
             raise Exception("Action not supported on controller")
 
     @property
@@ -113,6 +116,8 @@ class SystemManager(object):
         return attributes
 
     def _support_action(self, device, action):
+        log.debug("checking action [" + action + "] support for device [" + device.name + "]")
+        log.debug("device[" + device.name + "] has capabilities[" + str(device.capabilities) + "]")
         if (action is controller.POWER_ON or action is controller.POWER_OFF) and \
                 (1 in device.capabilities or 2 in device.capabilities):
             return True
