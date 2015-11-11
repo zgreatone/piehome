@@ -19,7 +19,7 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
     def check_xsrf_cookie(self):
         pass
 
-    @gen.coroutine
+    # @gen.coroutine
     def get(self):
         log.debug("in AlexaSkillHandler:get")
         self.set_header("Content-Type", "application/json; charset=UTF-8")
@@ -54,7 +54,7 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
         device = self.get_argument("device")
         response['speechOutput'] = "The " + device + " sensor is currently enabled"
 
-    @gen.coroutine
+    # @gen.coroutine
     def post(self):
         log.debug("in AlexaHandler:post")
         self.set_header("Content-Type", "application/json; charset=UTF-8")
