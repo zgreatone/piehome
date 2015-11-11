@@ -5,8 +5,6 @@ import simplejson as json
 
 from tornado import gen
 
-import sys, traceback
-
 
 class AlexaSkillHandler(tornado.web.RequestHandler):
     """
@@ -100,8 +98,6 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
                         response['speechOutput'] = "Error performing action on " + devices[0].name + " ."
 
                 except Exception as e:
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
                     log.error(e)
                     response['speechOutput'] = "Error when trying to perform action on device" + device + " ."
             elif device_count == 0:
