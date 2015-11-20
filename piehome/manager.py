@@ -3,7 +3,6 @@ import database
 from controller.veralite_controller import VeraliteController
 from controller.harmony_controller import HarmonyController
 from model.device import Device
-
 import controller
 
 
@@ -29,6 +28,21 @@ class SystemManager(object):
 
         return devices
 
+    def get_persisted_devices(self):
+        devices = []
+
+        with self._db_connection as con:
+            query_string = "SELECT * FROM device "
+            cur = con.cursor()
+            cur.execute(query_string)
+            rows = cur.fetchall()
+            if len(rows) > 0:
+                for row in rows:
+                    device = self._resolve_device(con, row)
+                    devices.append(device)
+
+        return devices
+
     def query_device(self, device_name):
         devices = []
 
@@ -40,13 +54,17 @@ class SystemManager(object):
             rows = cur.fetchall()
             if len(rows) > 0:
                 for row in rows:
-                    capabilities = self._get_device_capabilties(con, row['identifier'])
-                    attributes = self._get_device_attributes(con, row['identifier'])
-                    device = Device(row['name'], row['controller'], row['controller_device_id'],
-                                    capabilities, attributes)
+                    device = self._resolve_device(con, row)
                     devices.append(device)
 
         return devices
+
+    def _resolve_device(self, con, row):
+        capabilities = self._get_device_capabilties(con, row['identifier'])
+        attributes = self._get_device_attributes(con, row['identifier'])
+        device = Device(row['name'], row['controller'], row['controller_device_id'],
+                        capabilities, attributes)
+        return device
 
     def perform_action(self, device, action):
         log.debug("perform action[" + action + "] on device[" + str(device.name) + "]")

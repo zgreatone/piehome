@@ -2,7 +2,6 @@ import tornado.web
 import tornado.escape
 import logging as log
 import simplejson as json
-
 from tornado import gen
 
 
@@ -93,32 +92,63 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
                     log.debug("current device is [" + current_device.name + "]")
                     action_response = self._manager.perform_action(devices[0], intent)
                     if 'result' in action_response and action_response['result']:
-                        response['speechOutput'] = "Done."
+                        AlexaSkillHandler.speechlet_response(response, "Done.", "", True, {})
                     else:
-                        response['speechOutput'] = "Error performing action on " + devices[0].name + " ."
+                        AlexaSkillHandler.speechlet_response(response,
+                                                             "Error performing action on " + devices[0].name + " .",
+                                                             "",
+                                                             True,
+                                                             {})
 
                 except Exception as e:
                     log.error(e)
-                    response['speechOutput'] = "Error when trying to perform action on device" + device + " ."
+                    AlexaSkillHandler.speechlet_response(response,
+                                                         "Error when trying to perform action on device" + device + " .",
+                                                         "",
+                                                         True,
+                                                         {})
             elif device_count == 0:
                 response['speechOutput'] = "No device found with name" + device + " ."
+                AlexaSkillHandler.speechlet_response(response,
+                                                     "No device found with name" + device + " .",
+                                                     "",
+                                                     True,
+                                                     {})
             else:
                 response['speechOutput'] = "Too many devices with name" + device + " ."
+                AlexaSkillHandler.speechlet_response(response,
+                                                     "Too many devices with name" + device + " .",
+                                                     "Try again",
+                                                     False,
+                                                     {})
 
         elif intent == "ActivateScene":
             response['speechOutput'] = "In the near future I will activate a scene."
+            response['shouldEndSession'] = True
         elif intent == "DeActivateScene":
             response['speechOutput'] = "In the near future I will deactivate a scene ."
+            response['shouldEndSession'] = True
         elif intent == "NestMode":
             response['speechOutput'] = "In the near future I set mode on nest device."
+            response['shouldEndSession'] = True
         elif intent == "NestLevel":
             response['speechOutput'] = "In the near future I set level on nest device."
+            response['shouldEndSession'] = True
         elif intent == "NestStatus":
             response['speechOutput'] = "In the near future I will update status on nest device."
+            response['shouldEndSession'] = True
         else:
             response['speechOutput'] = "I have no clue what you are trying to do"
+            response['shouldEndSession'] = True
 
         return response
+
+    @staticmethod
+    def speechlet_response(response, speech_output, reprompt_text, should_end_session, session_attributes):
+        response['speechOutput'] = speech_output
+        response['repromptText'] = reprompt_text
+        response['shouldEndSession'] = should_end_session
+        response['sessionAttributes'] = session_attributes
 
     @staticmethod
     def get_response_object(intent):
@@ -150,42 +180,64 @@ class AlexaLightHandler(tornado.web.RequestHandler):
         log.debug("in AlexaLightHandler:get")
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         if not self.is_request_authorized():
-            self.write({'speechOutput': "Invalid authorization Error when accessing home automation service"})
+            raise tornado.web.HTTPError(401)
         else:
             response = self.handle_get_request()
 
-            # json_output = json.dumps(response)
-
-            # self.write(json_output)
             self.write(response)
 
     def handle_get_request(self):
-        intent = self.get_argument("intent", None)
-        response = AlexaLightHandler.get_response_object(intent)
-        if intent == "GetStatus":
-            response['speechOutput'] = "System is currently up and functional"
-        elif intent == "GetSensorStatus":
-            # perform command to get status of device
-            self.handle_get_sensor_status_request(response)
-        return response
-
-    def handle_get_sensor_status_request(self, response):
         """
-        Method handles request for getting status for motion sensor device.
-        The result in converted to string put in the 'speechOutput' key
-        of the response arg.
-        :param response: dictionary to hold speech output
+        Get request to return all on and off capable devices
         :return:
         """
-        device = self.get_argument("device")
-        response['speechOutput'] = "The " + device + " sensor is currently enabled"
+        namespace = self.get_argument("namespace", "Discovery")
+        response = AlexaLightHandler.get_response_object()
+
+        if namespace == "Discovery":
+            devices = self._manager.get_persisted_devices()
+            appliances = []
+            for d in devices:
+                if 1 in d.capabilities or 2 in d.capabilities:
+                    """
+                    Make sure device on and off capability
+                    """
+                    appliance = self.get_appliance(d)
+                    appliances.append(appliance)
+
+            response['appliances'] = appliances
+        else:
+            response['error'] = "unknown namespace"
+
+        return response
+
+    @staticmethod
+    def get_appliance(d):
+        appliance = dict()
+        appliance['applianceId'] = d.identifier
+        appliance['manufacturerName'] = d.controller
+        appliance['modelName'] = ''
+        appliance['version'] = 1
+        appliance['friendlyName'] = d.name
+        appliance['friendlyDescription'] = d.name
+        appliance['isReachable'] = True
+        details = dict()
+        details['controller_device_id'] = d.controller_device_id
+        for key, value in d.attributes.items():
+            details[key] = value
+            if "manufacturer" == key:
+                appliance['manufacturerName'] = value
+            elif "model" == key:
+                appliance['modelName'] = value
+        appliance['additionalApplianceDetails'] = details
+        return appliance
 
     @gen.coroutine
     def post(self):
         log.debug("in AlexaHandler:post")
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         if not self.is_request_authorized():
-            self.write({'speechOutput': "Invalid authorization Error when accessing home automation service"})
+            raise tornado.web.HTTPError(401)
         else:
             # TODO error check below in case body doest exists
             body = tornado.escape.to_basestring(self.request.body)
@@ -197,36 +249,20 @@ class AlexaLightHandler(tornado.web.RequestHandler):
             response = self.process_post_body(body_json)
             self.write(response)
 
-    @staticmethod
-    def process_post_body(body_json):
+    def process_post_body(self, body_json):
         """
 
         :param body_json:
         :return:
         """
-        intent = body_json['intent']
-        response = AlexaLightHandler.get_response_object(intent)
-        if intent == "TurnOn":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will turn on " + device + " ."
-        elif intent == "TurnOff":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will turn off " + device + " ."
-        elif intent == "Arm":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will arm " + device + " ."
-        elif intent == "DisArm":
-            device = body_json['device']
-            response['speechOutput'] = "In the near future I will disarm " + device + " ."
-        else:
-            response['speechOutput'] = "I have no clue what you are trying to do"
+        namespace = self.get_argument("namespace", None)
+        response = AlexaLightHandler.get_response_object()
 
         return response
 
     @staticmethod
-    def get_response_object(intent):
+    def get_response_object():
         response = {}
-        response['intent'] = intent
         return response
 
     def is_request_authorized(self):
@@ -235,7 +271,7 @@ class AlexaLightHandler(tornado.web.RequestHandler):
         :return:
         """
         api_key = self.get_argument("api_key", None)
-        if api_key is None:
+        if api_key is None or api_key != self._manager.system_key:
             return False
         else:
             return True
