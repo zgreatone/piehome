@@ -3,6 +3,7 @@ import tornado.escape
 import logging as log
 import simplejson as json
 from tornado import gen
+import controller
 
 
 class AlexaSkillHandler(tornado.web.RequestHandler):
@@ -169,6 +170,10 @@ class AlexaSkillHandler(tornado.web.RequestHandler):
 
 
 class AlexaLightHandler(tornado.web.RequestHandler):
+    """
+    Handler to support alexa light skill
+    """
+
     def initialize(self, system_manager):
         self._manager = system_manager
 
@@ -191,7 +196,8 @@ class AlexaLightHandler(tornado.web.RequestHandler):
         Get request to return all on and off capable devices
         :return:
         """
-        namespace = self.get_argument("namespace", "Discovery")
+        namespace = self.get_argument("namespace", None)
+        name = self.get_argument("name", None)
         response = AlexaLightHandler.get_response_object()
 
         if namespace == "Discovery":
@@ -205,9 +211,10 @@ class AlexaLightHandler(tornado.web.RequestHandler):
                     appliance = self.get_appliance(d)
                     appliances.append(appliance)
 
-            response['appliances'] = appliances
+            self.populate_response(response, True, appliances)
         else:
-            response['error'] = "unknown namespace"
+            # self.populate_response(response, False, "unknown namespace")
+            raise tornado.web.HTTPError(400)
 
         return response
 
@@ -255,10 +262,58 @@ class AlexaLightHandler(tornado.web.RequestHandler):
         :param body_json:
         :return:
         """
-        namespace = self.get_argument("namespace", None)
         response = AlexaLightHandler.get_response_object()
 
+        event_header = body_json['header']
+        event_payload = body_json['payload']
+
+        namespace = event_header['namespace']
+        name = event_header['name']
+
+        if namespace == 'Control':
+            if name == 'SwitchOnOffRequest':
+                self._process_switch_on_off_request(event_payload, response)
+
+            elif name == 'AdjustNumericalSettingRequest':
+                log.debug('Control AdjustNumericalSetting Request received')
+                raise tornado.web.HTTPError(501)
+            else:
+                # self.populate_response(response, False, 'Invalid control name')
+                raise tornado.web.HTTPError(400)
+        else:
+            # self.populate_response(response, False, 'Unknown namespace')
+            raise tornado.web.HTTPError(400)
+
         return response
+
+    def _process_switch_on_off_request(self, event_payload, response):
+        log.debug("Control SwitchOnOff Request received")
+        device_id = event_payload['appliance']['applianceId']
+        action = self._resolve_switch_control_action(event_payload['switchControlAction'])
+        devices = self._manager.query_device_by_id(device_id)
+        device_count = len(devices)
+        log.debug(str(device_count) + " matching device with id [" + device_id + "]")
+        if device_count == 1:
+            try:
+                action_response = self._manager.perform_action(devices[0], action)
+                if 'result' in action_response and action_response['result']:
+                    self.populate_response(response, True, {})
+                else:
+                    log.debug("performing action[" + action + "] on device[" + device_id + "] was unsuccessful")
+                    raise Exception(
+                        "performing action[" + action + "] on device[" + device_id + "] was unsuccessful")
+            except Exception as e:
+                log.error("error when processing switchonoff request")
+                log.error(e)
+                raise tornado.web.HTTPError(500)
+        else:
+            log.error("Either too many or no device found with  device id [" + device_id + "]")
+            raise tornado.web.HTTPError(500)
+
+    @staticmethod
+    def populate_response(response, success, data):
+        response['success'] = success
+        response['data'] = data
 
     @staticmethod
     def get_response_object():
@@ -275,3 +330,12 @@ class AlexaLightHandler(tornado.web.RequestHandler):
             return False
         else:
             return True
+
+    @staticmethod
+    def _resolve_switch_control_action(param):
+        if param == "TURN_ON":
+            return controller.POWER_ON
+        elif param == "TURN_OFF":
+            return controller.POWER_OFF
+        else:
+            return None

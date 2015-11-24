@@ -59,6 +59,22 @@ class SystemManager(object):
 
         return devices
 
+    def query_device_by_id(self, device_id):
+        devices = []
+
+        with self._db_connection as con:
+            query_string = "SELECT * FROM device where device.identifier = '" + str(
+                device_id) + "' "
+            cur = con.cursor()
+            cur.execute(query_string)
+            rows = cur.fetchall()
+            if len(rows) > 0:
+                for row in rows:
+                    device = self._resolve_device(con, row)
+                    devices.append(device)
+
+        return devices
+
     def _resolve_device(self, con, row):
         capabilities = self._get_device_capabilties(con, row['identifier'])
         attributes = self._get_device_attributes(con, row['identifier'])
